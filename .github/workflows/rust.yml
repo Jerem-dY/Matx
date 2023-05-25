@@ -3,6 +3,8 @@ name: Rust
 on:
   push:
     branches: [ "main" ]
+    tags:
+      - '*'
   pull_request:
     branches: [ "main" ]
 
@@ -34,3 +36,20 @@ jobs:
           args: --target x86_64-pc-windows-msvc
       - name: Run tests
         run: cargo test --verbose
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v2
+
+      - name: Install stable toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - run: cargo publish --token ${CRATES_TOKEN}
+        env:
+          CRATES_TOKEN: ${{ secrets.CRATES_TOKEN }}
