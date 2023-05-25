@@ -21,7 +21,6 @@ jobs:
         with:
           target: ${{ matrix.target }}
           run: cargo build --verbose && cargo test --verbose
-          sccache: 'true'
           manylinux: auto
 
   windows:
@@ -35,7 +34,6 @@ jobs:
         with:
           target: ${{ matrix.target }}
           run: cargo build --verbose && cargo test --verbose
-          sccache: 'true'
 
   macos:
     runs-on: macos-latest
@@ -48,4 +46,3 @@ jobs:
         with:
           target: ${{ matrix.target }}
           run: cargo build --verbose && cargo test --verbose
-          sccache: 'true'
