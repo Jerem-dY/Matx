@@ -33,7 +33,7 @@ impl<T: Default + Clone + Debug, const ROWS: usize, const COLS: usize> Matrix<T,
         }
     }
 
-    /// Creates a matrix out of a vector of vectors. ROWS and COLS must be consistent with the data provided.
+    /// Method that returns a new, inverted matrix (same dimensions).
     /// 
     /// # Examples
     /// 
@@ -45,20 +45,21 @@ impl<T: Default + Clone + Debug, const ROWS: usize, const COLS: usize> Matrix<T,
     ///     vec![2.0f64, 3.6f64], 
     ///     vec![1.2f64, 0.2f64]
     /// ]);
+    /// 
+    /// // Reversing the matrix and stocking the result
+    /// let rev = mat.reverse();
+    /// 
+    /// // What we're supposed to get
+    /// let rev_ = Matrix::<f64, 2, 2>::from(vec![
+    ///     vec![0.2f64, 1.2f64], 
+    ///     vec![3.6f64, 2.0f64]
+    /// ]);
+    /// 
+    /// assert_eq!(rev, rev_);
     /// ```
-    pub fn from(input: Vec<Vec<T>>) -> Self {
-        assert!(input.len() == ROWS);
-
-        let mut data = Vec::<T>::new();
-
-        for mut row in input {
-            assert!(row.len() == COLS);
-
-            data.append(&mut row);
-        }
-
+    pub fn reverse(&self) -> Self {
         Self {
-            data
+            data: self.data.clone().into_iter().rev().collect()
         }
     }
 
@@ -171,50 +172,46 @@ impl <T: Default + Clone + Debug + rand::distributions::uniform::SampleUniform, 
     /// ```
     /// use matx::matrix::*;
     /// 
-    /// // Building the matrix
-    /// let mut mat = Matrix::<f64, 5, 5>::new();
-    /// 
-    /// // Randomising the matrix
-    /// mat.rand(0.0f64..10.0f64);
+    /// // Building the randomized matrix
+    /// let mat = Matrix::<f64, 5, 5>::rand(0.0f64..10.0f64);
     /// 
     /// // Printing the matrix
     /// mat.print(None)
     /// ```
-    pub fn rand<R: rand::distributions::uniform::SampleRange<T> + Clone>(&mut self, range: R) {
+    pub fn rand<R: rand::distributions::uniform::SampleRange<T> + Clone>(range: R) -> Self {
 
         let mut rng = rand::thread_rng();
 
-        for i in 0..ROWS {
-            for j in 0..COLS {
-                self.data[i*COLS+j] = rng.gen_range(range.clone());
-            }
+        let mut data = Vec::<T>::new();
+
+        for _i in 0..ROWS*COLS {
+            data.push(rng.gen_range(range.clone()));
+        }
+
+        Self {
+            data
         }
     }
 }
 
 
-impl<T: Default + Clone + Debug + std::ops::Add<Output = T>, const ROWS: usize, const COLS: usize, const O_ROWS: usize, const O_COLS: usize> 
-ops::Add<Matrix<T, O_ROWS, O_COLS>> for Matrix<T, ROWS, COLS> 
+impl<T: Default + Clone + Debug + std::ops::Add<Output = T>, const ROWS: usize, const COLS: usize> 
+ops::Add<Matrix<T, ROWS, COLS>> for Matrix<T, ROWS, COLS> 
 {
 
-    type Output = Result<Matrix<T, ROWS, COLS>, &'static str>;
+    type Output = Matrix<T, ROWS, COLS>;
 
-    fn add(self, rhs: Matrix<T, O_ROWS, O_COLS>) -> Self::Output {
+    fn add(self, rhs: Matrix<T, ROWS, COLS>) -> Self::Output {
 
-        if !(COLS == O_COLS && ROWS == O_ROWS) {
-            Err("Matrices must be the same size to be added.")
-        }
-        else{
-            let mut out = Matrix::<T, ROWS, COLS>::new();
+        let mut out = Matrix::<T, ROWS, COLS>::new();
 
-            for i in 0..ROWS {
-                for j in 0..COLS {
-                    out.data[i*COLS+j] = self.data[i*COLS+j].clone() + rhs.data[i*O_COLS+j].clone()
-                }
+        for i in 0..ROWS {
+            for j in 0..COLS {
+                out.data[i*COLS+j] = self.data[i*COLS+j].clone() + rhs.data[i*COLS+j].clone()
             }
-
-            Ok(out)
         }
+
+        out
 
     }
 }
@@ -225,7 +222,7 @@ ops::Add<T> for Matrix<T, ROWS, COLS>
     type Output = Matrix<T, ROWS, COLS>;
 
     fn add(self, rhs: T) -> Self::Output {
-        let mut out = Matrix::<T, ROWS, COLS>::new();
+        let mut out: Matrix<T, ROWS, COLS> = Matrix::<T, ROWS, COLS>::new();
 
         for i in 0..ROWS {
             for j in 0..COLS {
@@ -236,6 +233,7 @@ ops::Add<T> for Matrix<T, ROWS, COLS>
         out
     }
 }
+
 
 
 impl<T: Default + Clone + Debug + std::ops::Mul<Output = T> + std::ops::Add<Output = T>, const ROWS: usize, const COLS: usize, const O_ROWS: usize, const O_COLS: usize> 
@@ -264,5 +262,104 @@ ops::Mul<Matrix<T, O_ROWS, O_COLS>> for Matrix<T, ROWS, COLS> {
 
             Ok(out)
         }
+    }
+}
+
+
+impl <T: Default + Clone + Debug, const ROWS: usize, const COLS: usize> From<Vec<Vec<T>>> for Matrix<T, ROWS, COLS> {
+
+    /// Creates a matrix out of a vector of vectors. ROWS and COLS must be consistent with the data provided.
+    /// 
+    /// # Examples
+    /// 
+    /// Basic usage:
+    /// ```
+    /// use matx::matrix::*;
+    /// 
+    /// let mat = Matrix::<f64, 2, 2>::from(vec![
+    ///     vec![2.0f64, 3.6f64], 
+    ///     vec![1.2f64, 0.2f64]
+    /// ]);
+    /// ```
+    fn from(value: Vec<Vec<T>>) -> Self {
+        assert!(value.len() == ROWS);
+
+        let mut data = Vec::<T>::new();
+
+        for mut row in value {
+            assert!(row.len() == COLS);
+
+            data.append(&mut row);
+        }
+
+        Self {
+            data
+        }
+    }
+}
+
+
+pub struct RVector<T: Default + Clone + Debug, const COLS: usize>(Matrix<T, 1, COLS>);
+pub struct CVector<T: Default + Clone + Debug, const ROWS: usize>(Matrix<T, ROWS, 1>);
+
+
+impl<T: Default + Clone + Debug, const COLS: usize> From<CVector<T, COLS>> for RVector<T, COLS> {
+
+    fn from(value: CVector<T, COLS>) -> Self {
+        Self(Matrix::<T, 1, COLS>{
+            data: value.0.data.clone()
+        })
+    }
+}
+
+impl<T: Default + Clone + Debug, const ROWS: usize> From<RVector<T, ROWS>> for CVector<T, ROWS> {
+
+    fn from(value: RVector<T, ROWS>) -> Self {
+        Self(Matrix::<T, ROWS, 1>{
+            data: value.0.data.clone()
+        })
+    }
+}
+
+impl<T: Default + Clone + Debug, const COLS: usize> From<Vec<T>> for RVector<T, COLS> {
+
+    fn from(value: Vec<T>) -> Self {
+        Self(Matrix::<T, 1, COLS>{
+            data: value
+        })
+    }
+}
+
+impl<T: Default + Clone + Debug, const ROWS: usize> From<Vec<T>> for CVector<T, ROWS> {
+
+    fn from(value: Vec<T>) -> Self {
+        Self(Matrix::<T, ROWS, 1>{
+            data: value
+        })
+    }
+}
+
+
+
+impl<T: Default + Clone + Debug, const COLS: usize> RVector<T, COLS> {
+
+    pub fn as_mat(&self) -> &Matrix<T, 1, COLS> {
+        &self.0
+    }
+
+    pub fn as_mut_mat(&mut self) -> &mut Matrix<T, 1, COLS> {
+        &mut self.0
+    }
+}
+
+
+impl<T: Default + Clone + Debug, const ROWS: usize> CVector<T, ROWS> {
+
+    pub fn as_mat(&self) -> &Matrix<T, ROWS, 1> {
+        &self.0
+    }
+
+    pub fn as_mut_mat(&mut self) -> &mut Matrix<T, ROWS, 1> {
+        &mut self.0
     }
 }

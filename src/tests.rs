@@ -48,6 +48,14 @@ fn multiply() {
 
 
 #[test]
+fn random() {
+
+    let mat = Matrix::<f64, 5, 5>::rand(0.0f64..10.0f64);
+    mat.print(None);
+}
+
+
+#[test]
 fn add() {
 
     // 1 1 1 1 1
@@ -55,7 +63,7 @@ fn add() {
     // 3 3 3 3 3
     // 4 4 4 4 4
     // 5 5 5 5 5
-    let a = Matrix::<f64, 5, 5>::from(vec![
+    let a = Matrix::from(vec![
         vec![1.0f64; 5],
         vec![2.0f64; 5],
         vec![3.0f64; 5],
@@ -76,7 +84,7 @@ fn add() {
         vec![1.0f64; 5],
     ]);
 
-    let c = (a + b).unwrap();
+    let c = a + b;
 
     // a + b should equal this:
     // 2 2 2 2 2
@@ -93,4 +101,17 @@ fn add() {
     ]);
 
     assert_eq!(c, c_)
+}
+
+
+#[test]
+fn vectors() {
+
+    let v1 = RVector::<f64, 2>::from(vec![1.0f64, 2.6f64]);
+
+    v1.as_mat().print(None);
+
+    let v1_: CVector<f64, 2> = v1.into();
+
+    v1_.as_mat().print(None);
 }

@@ -2,11 +2,15 @@
 
 A lightweight, rusty matrix library that allows for simple and fast matrix operations.
 
-
 ![build-badge](https://img.shields.io/github/actions/workflow/status/Jerem-dY/Matx/rust.yml)
 [![GitHub](https://img.shields.io/github/license/Jerem-dY/matx)](https://github.com/Jerem-dY/Matx/blob/main/LICENSE)
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/Jerem-dY/matx?logo=github)](https://github.com/Jerem-dY/Matx/releases)
 [![Twitter URL](https://img.shields.io/twitter/url?style=social&url=https%3A%2F%2Ftwitter.com%2FJB09SI)](https://twitter.com/JB09SI)
+
+
+- GitHub:   https://github.com/Jerem-dY/Matx
+- Crate.io: https://crates.io/crates/matx
+- Doc:      https://docs.rs/matx/0.1.0/matx/
 
 ## Usage
 
@@ -29,10 +33,10 @@ let a = Matrix::<f64, 2, 3>::from(vec![
 
 ### Operators
 **Multiplication** and **addition** are implemented _between matrices_, and _between a matrix and an object of type T_ (the type of the elements).  
-Matrix-matrix operations may require compatibility between the two (sizewise), so they return a `Result<>`.
+Matrix-matrix operations may require compatibility between the two (sizewise) ; operations on matrices of different sizes, like the dot product, return a `Result<>` since the size checks mostly happen at runtime for now.
 
 No operation is done in-place: they all generate a new matrix.
 
 ```rust
-let c = (a + b).unwrap(); // adds matrices a and b, as long as they are the same size
+let c = a + b; // adds matrices a and b, as long as they are the same size
 ```
