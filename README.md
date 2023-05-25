@@ -4,7 +4,7 @@ A lightweight, rusty matrix library that allows for simple and fast matrix opera
 
 
 ![build-badge](https://img.shields.io/github/actions/workflow/status/Jerem-dY/Matx/rust.yml)
-[![GitHub](https://img.shields.io/github/license/Jerem-dY/Matx)](https://github.com/Jerem-dY/Matx/blob/main/LICENSE)
+[![GitHub](https://img.shields.io/github/license/Jerem-dY/matx)](https://github.com/Jerem-dY/Matx/blob/main/LICENSE)
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/Jerem-dY/Matx?logo=github)](https://github.com/Jerem-dY/Matx/releases)
 [![Twitter URL](https://img.shields.io/twitter/url?style=social&url=https%3A%2F%2Ftwitter.com%2FJB09SI)](https://twitter.com/JB09SI)
 
