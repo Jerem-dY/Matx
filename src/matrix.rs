@@ -1,9 +1,10 @@
-
+//! Module defining the structure and methods of a matrix.
 
 use std::fmt::Debug;
 use rand::Rng;
 use std::ops;
 
+/// Structure that defines a matrix. It has only one property, a vector of values of type T that is segmented virtually when operating over the matrix using the constant generic parameters.
 #[derive(PartialEq, Debug)]
 pub struct Matrix<T: Default + Clone + Debug, const ROWS: usize, const COLS: usize> {
     data: Vec<T>
@@ -13,12 +14,38 @@ pub struct Matrix<T: Default + Clone + Debug, const ROWS: usize, const COLS: usi
 
 impl<T: Default + Clone + Debug, const ROWS: usize, const COLS: usize> Matrix<T, ROWS, COLS> {
 
+    /// Constructor of a new, empty matrix of size ROWS*COLS. Every value is initialized using T::default() (0 in case of a usize, for example).
+    /// 
+    /// # Examples
+    /// 
+    /// Basic usage:
+    /// ```
+    /// use matx::matrix::*;
+    /// 
+    /// let mat = Matrix::<f64, 2, 2>::new();
+    /// // Gives: 
+    /// // 0.0f64, 0.0f64
+    /// // 0.0f64, 0.0f64
+    /// ```
     pub fn new() -> Self {
         Self {
             data: vec![T::default(); ROWS*COLS]
         }
     }
 
+    /// Creates a matrix out of a vector of vectors. ROWS and COLS must be consistent with the data provided.
+    /// 
+    /// # Examples
+    /// 
+    /// Basic usage:
+    /// ```
+    /// use matx::matrix::*;
+    /// 
+    /// let mat = Matrix::<f64, 2, 2>::from(vec![
+    ///     vec![2.0f64, 3.6f64], 
+    ///     vec![1.2f64, 0.2f64]
+    /// ]);
+    /// ```
     pub fn from(input: Vec<Vec<T>>) -> Self {
         assert!(input.len() == ROWS);
 
@@ -35,6 +62,27 @@ impl<T: Default + Clone + Debug, const ROWS: usize, const COLS: usize> Matrix<T,
         }
     }
 
+    /// Method that prints the matrix on the standard output, using an optional separator (tabulation if `None`).
+    /// 
+    /// # Examples
+    /// 
+    /// Basic usage:
+    /// ```
+    /// use matx::matrix::*;
+    /// 
+    /// // Building the matrix
+    /// let mat = Matrix::<f64, 2, 2>::from(vec![
+    ///     vec![2.0f64, 3.6f64], 
+    ///     vec![1.2f64, 0.2f64]
+    /// ]);
+    /// 
+    /// // Printing the matrix
+    /// mat.print(None);
+    /// 
+    /// // Output: 
+    /// // 2.0  3.6
+    /// // 1.2  0.2
+    /// ```
     pub fn print(& self, sep: Option<&str>) {
 
         for i in 0..ROWS {
@@ -52,7 +100,23 @@ impl<T: Default + Clone + Debug, const ROWS: usize, const COLS: usize> Matrix<T,
         }
     }
 
-
+    /// Method to get the [row ; column] item of the matrix.
+    /// 
+    /// # Examples
+    /// 
+    /// Basic usage:
+    /// ```
+    /// use matx::matrix::*;
+    /// 
+    /// // Building the matrix
+    /// let mat = Matrix::<f64, 2, 2>::from(vec![
+    ///     vec![2.0f64, 3.6f64], 
+    ///     vec![1.2f64, 0.2f64]
+    /// ]);
+    /// 
+    /// let cell: f64 = mat.get(0, 1).unwrap();
+    /// assert_eq!(cell, 3.6f64);
+    /// ```
     pub fn get(&self, row: usize, column: usize) -> Option<T> {
         let index = row*COLS + column;
 
@@ -64,6 +128,24 @@ impl<T: Default + Clone + Debug, const ROWS: usize, const COLS: usize> Matrix<T,
         }
     }
 
+    /// Method to set the [row ; column] item of the matrix.
+    /// 
+    /// # Examples
+    /// 
+    /// Basic usage:
+    /// ```
+    /// use matx::matrix::*;
+    /// 
+    /// // Building the matrix
+    /// let mut mat = Matrix::<f64, 2, 2>::from(vec![
+    ///     vec![2.0f64, 3.6f64], 
+    ///     vec![1.2f64, 0.2f64]
+    /// ]);
+    /// 
+    /// mat.set(0.0f64, 0, 1);
+    /// 
+    /// assert_eq!(mat.get(0, 1).unwrap(), 0.0f64);
+    /// ```
     pub fn set(&mut self, value: T, row: usize, column: usize) -> Result<(), &'static str> {
         let index = row*COLS + column;
 
@@ -79,27 +161,25 @@ impl<T: Default + Clone + Debug, const ROWS: usize, const COLS: usize> Matrix<T,
 }
 
 
-/*impl<T: Default + Clone + Debug, const ROWS: usize, const COLS: usize> PartialEq<T> for Matrix<T, ROWS, COLS> {
-
-
-    fn eq(&self, other: &Matrix<T, O_ROWS, O_COLS>) -> bool {
-        
-        if self.data != other.data {
-            false
-        }
-        else if O_ROWS != ROWS || O_COLS != COLS {
-            false
-        }
-
-        true
-    }
-
-}*/
-
-
-
 impl <T: Default + Clone + Debug + rand::distributions::uniform::SampleUniform, const ROWS: usize, const COLS: usize> Matrix<T, ROWS, COLS> {
 
+    /// Sets all cells of the matrix to a random value in a certain range R.
+    /// 
+    /// # Examples
+    /// 
+    /// Basic usage:
+    /// ```
+    /// use matx::matrix::*;
+    /// 
+    /// // Building the matrix
+    /// let mut mat = Matrix::<f64, 5, 5>::new();
+    /// 
+    /// // Randomising the matrix
+    /// mat.rand(0.0f64..10.0f64);
+    /// 
+    /// // Printing the matrix
+    /// mat.print(None)
+    /// ```
     pub fn rand<R: rand::distributions::uniform::SampleRange<T> + Clone>(&mut self, range: R) {
 
         let mut rng = rand::thread_rng();
