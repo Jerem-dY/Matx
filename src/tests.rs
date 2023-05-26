@@ -3,7 +3,7 @@ use crate::matrix::*;
 #[test]
 fn inits() {
 
-    let mut a_ = Matrix::<f64, 2, 3>::new();
+    let mut a_ = Matrix::<f64>::new(2, 3);
     a_.set(1.0f64, 0, 0).expect("Error");
     a_.set(2.0f64, 0, 1).expect("Error");
     a_.set(3.0f64, 0, 2).expect("Error");
@@ -12,7 +12,7 @@ fn inits() {
     a_.set(6.0f64, 1, 2).expect("Error");
 
 
-    let a = Matrix::<f64, 2, 3>::from(vec![
+    let a = Matrix::<f64>::from(vec![
         vec![1.0f64, 2.0f64, 3.0f64],
         vec![4.0f64, 5.0f64, 6.0f64]
     ]);
@@ -24,12 +24,12 @@ fn inits() {
 #[test]
 fn multiply() {
 
-    let a = Matrix::<f64, 2, 3>::from(vec![
+    let a = Matrix::<f64>::from(vec![
         vec![1.0f64, 2.0f64, 3.0f64],
         vec![4.0f64, 5.0f64, 6.0f64]
     ]);
 
-    let b = Matrix::<f64, 3, 2>::from(vec![
+    let b = Matrix::<f64>::from(vec![
         vec![7.0f64, 8.0f64],
         vec![9.0f64, 10.0f64],
         vec![11.0f64, 12.0f64]
@@ -37,7 +37,7 @@ fn multiply() {
 
     let c = (a * b).unwrap();
 
-    let c_ = Matrix::<f64, 2, 2>::from(vec![
+    let c_ = Matrix::<f64>::from(vec![
         vec![58.0f64, 64.0f64],
         vec![139.0f64, 154.0f64]
     ]);
@@ -50,7 +50,7 @@ fn multiply() {
 #[test]
 fn random() {
 
-    let mat = Matrix::<f64, 5, 5>::rand(0.0f64..10.0f64);
+    let mat = Matrix::<f64>::rand(5, 5, 0.0f64..10.0f64);
     mat.print(None);
 }
 
@@ -76,7 +76,7 @@ fn add() {
     // 1 1 1 1 1
     // 1 1 1 0 1 notice the '0'!
     // 1 1 1 1 1
-    let b = Matrix::<f64, 5, 5>::from(vec![
+    let b = Matrix::<f64>::from(vec![
         vec![1.0f64; 5],
         vec![1.0f64; 5],
         vec![1.0f64; 5],
@@ -92,7 +92,7 @@ fn add() {
     // 4 4 4 4 4
     // 5 5 5 4 5
     // 6 6 6 6 6
-    let c_ = Matrix::<f64, 5, 5>::from(vec![
+    let c_ = Matrix::<f64>::from(vec![
         vec![2.0f64; 5],
         vec![3.0f64; 5],
         vec![4.0f64; 5],
@@ -101,17 +101,4 @@ fn add() {
     ]);
 
     assert_eq!(c, c_)
-}
-
-
-#[test]
-fn vectors() {
-
-    let v1 = RVector::<f64, 2>::from(vec![1.0f64, 2.6f64]);
-
-    v1.as_mat().print(None);
-
-    let v1_: CVector<f64, 2> = v1.into();
-
-    v1_.as_mat().print(None);
 }
