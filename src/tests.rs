@@ -102,3 +102,31 @@ fn add() {
 
     assert_eq!(c, c_)
 }
+
+
+#[test]
+fn iterators() {
+
+    // 1 1 1 1 1
+    // 2 2 2 2 2
+    // 3 3 3 3 3
+    // 4 4 4 4 4
+    // 5 5 5 5 5
+    let a = Matrix::from(vec![
+        vec![1.0f64; 5],
+        vec![2.0f64, 2.0f64, 3.0f64, 2.0f64, 2.0f64],
+        vec![3.0f64; 5],
+        vec![4.0f64; 5],
+        vec![5.0f64; 5],
+    ]);
+
+    for r in a.rows() {
+        println!("{:?}", r);
+    }
+
+    println!();
+
+    for c in a.cols() {
+        println!("{:?}", c);
+    }
+}

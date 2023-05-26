@@ -3,10 +3,11 @@
 use std::fmt::Debug;
 use rand::Rng;
 use std::ops;
+use num::pow::*;
 
 
-/// Structure that defines a matrix. It has only one property, a vector of values of type T that is segmented virtually when operating over the matrix using the constant generic parameters.
-#[derive(PartialEq, Debug)]
+/// Structure that defines a matrix. It has only two properties, a vector of values of type T that is segmented virtually when operating over the matrix using the constant generic parameters, and the number of rows and columns.
+#[derive(PartialEq, Debug, Clone)]
 pub struct Matrix<T: Default + Clone + Debug> {
     data: Vec<T>,
     pub rows: usize,
@@ -17,7 +18,7 @@ pub struct Matrix<T: Default + Clone + Debug> {
 impl<T: Default + Clone + Debug> Matrix<T> {
 
     
-    /// Constructor of a new, empty matrix of size ROWS*COLS. Every value is initialized using T::default() (0 in case of a usize, for example).
+    /// Constructor of a new, empty matrix of size rows*cols. Every value is initialized using T::default() (0 in case of a usize, for example).
     /// 
     /// # Examples
     /// 
@@ -36,6 +37,59 @@ impl<T: Default + Clone + Debug> Matrix<T> {
             rows,
             cols
         }
+    }
+
+
+    pub fn map<F>(&self, f: F) -> Self 
+    where F: FnMut(&T,) -> T
+    {
+        Self {
+            data: self.data.iter().map(f).collect(),
+            rows: self.rows,
+            cols: self.cols
+        }
+    }
+
+    /// Method that returns a `Rows` object, an iterator that iterates over rows of a matrix.
+    /// 
+    /// # Examples
+    /// 
+    /// Basic usage:
+    /// ```
+    /// use matx::matrix::*;
+    /// 
+    /// let mat = Matrix::<f64>::from(vec![
+    ///     vec![2.0f64, 3.6f64], 
+    ///     vec![1.2f64, 0.2f64]
+    /// ]);
+    /// 
+    /// for r in mat.rows() {
+    ///     println!("{:?}", r);
+    /// }
+    /// ```
+    pub fn rows<'a>(&'a self) -> Rows<'a, T> {
+        Rows::<'a>(&self, 0)
+    }
+
+    /// Method that returns a `Columns` object, an iterator that iterates over columns of a matrix.
+    /// 
+    /// # Examples
+    /// 
+    /// Basic usage:
+    /// ```
+    /// use matx::matrix::*;
+    /// 
+    /// let mat = Matrix::<f64>::from(vec![
+    ///     vec![2.0f64, 3.6f64], 
+    ///     vec![1.2f64, 0.2f64]
+    /// ]);
+    /// 
+    /// for r in mat.cols() {
+    ///     println!("{:?}", r);
+    /// }
+    /// ```
+    pub fn cols<'a>(&'a self) -> Columns<'a, T> {
+        Columns::<'a>(&self, 0)
     }
 
     /// Method that prints the matrix on the standard output, using an optional separator (tabulation if `None`).
@@ -64,11 +118,12 @@ impl<T: Default + Clone + Debug> Matrix<T> {
         for i in 0..self.rows {
             for j in 0..self.cols {
 
+
                 if let Some(s) = sep {
-                    print!("{}{:?}", s, self.data[i*self.rows+j]);
+                    print!("{}{:?}", s, self.data[i*self.cols+j]);
                 }
                 else {
-                    print!("\t{:?}", self.data[i*self.rows+j]);
+                    print!("\t{:?}", self.data[i*self.cols+j]);
                 }
             }
 
@@ -204,6 +259,30 @@ impl <T: Default + Clone + Debug + rand::distributions::uniform::SampleUniform> 
 }
 
 
+impl<T: Default + Clone + Debug + std::ops::Add<Output = T> + std::iter::Sum>  Matrix<T> {
+
+    /// Method that returns the sum of all cells in the matrix.
+    /// 
+    /// # Examples
+    /// 
+    /// Basic usage:
+    /// ```
+    /// use matx::matrix::*;
+    /// 
+    /// let mat = Matrix::<f64>::from(vec![
+    ///     vec![2.0f64, 3.6f64], 
+    ///     vec![1.2f64, 0.2f64]
+    /// ]);
+    /// 
+    /// let expected = 2.0f64 + 3.6f64 + 1.2f64 + 0.2f64;
+    /// 
+    /// assert_eq!(expected, mat.sum());
+    /// ```
+    pub fn sum(&self) -> T {
+        self.data.clone().into_iter().sum()
+    }
+}
+
 impl<T: Default + Clone + Debug + std::ops::Add<Output = T>> 
 ops::Add<Matrix<T>> for Matrix<T> 
 {
@@ -243,6 +322,39 @@ ops::Add<T> for Matrix<T>
     }
 }
 
+
+impl<T: Default + Clone + Debug>
+ops::Neg for Matrix<T> 
+where T: ops::Neg<Output = T>
+{
+    type Output = Matrix<T>;
+
+    fn neg(self) -> Self::Output {
+        Self::Output {
+            data : self.data.iter().map(|x| -x.clone()).collect(),
+            rows : self.rows,
+            cols : self.cols
+        }
+    }
+}
+
+
+impl<T: Default + Clone + Debug + std::ops::Mul<Output = T> + Pow<T, Output = T> + num::One>
+Pow<T> for Matrix<T> 
+{
+    type Output = Matrix<T>;
+
+    fn pow(self, rhs: T) -> Self::Output {
+        // Actually a pow() function here lol
+
+        Self::Output {
+            data : self.data.iter().map(|x| Pow::<T>::pow(rhs.clone(), x.clone())).collect(),
+            rows : self.rows,
+            cols : self.cols
+        }
+
+    }
+}
 
 
 impl<T: Default + Clone + Debug + std::ops::Mul<Output = T> + std::ops::Add<Output = T>> 
@@ -306,6 +418,55 @@ impl <T: Default + Clone + Debug> From<Vec<Vec<T>>> for Matrix<T> {
             data,
             rows,
             cols
+        }
+    }
+}
+
+
+pub struct Rows<'a, T: Default + Clone + Debug>(&'a Matrix<T>, usize);
+pub struct Columns<'a, T: Default + Clone + Debug>(&'a Matrix<T>, usize);
+
+
+impl<T: Default + Clone + Debug> Iterator for Columns<'_, T> {
+
+    type Item = Vec<T>;
+
+    fn next(&mut self) -> Option<Vec<T>> {
+
+        
+
+        if self.1*self.0.rows < self.0.data.len(){
+
+            let mut out = Vec::<T>::new();
+
+            for i in 0..self.0.rows {
+                let index = i*self.0.rows + self.1;
+                out.push(self.0.data[index].clone());
+            }
+            self.1 += 1;
+            Some(out)
+        }
+        else{
+            None
+        }
+    }
+}
+
+
+impl<T: Default + Clone + Debug> Iterator for Rows<'_, T> {
+
+    type Item = Vec<T>;
+
+    fn next(&mut self) -> Option<Vec<T>> {
+
+        let index = self.1*self.0.cols;
+
+        if index < self.0.data.len(){
+            self.1 += 1;
+            Some(self.0.data[index..index+self.0.cols].to_owned())
+        }
+        else{
+            None
         }
     }
 }
