@@ -8,9 +8,9 @@ use std::ops;
 /// Structure that defines a matrix. It has only one property, a vector of values of type T that is segmented virtually when operating over the matrix using the constant generic parameters.
 #[derive(PartialEq, Debug)]
 pub struct Matrix<T: Default + Clone + Debug> {
-    pub data: Vec<T>,
-    rows: usize,
-    cols: usize
+    data: Vec<T>,
+    pub rows: usize,
+    pub cols: usize
 }
 
 
