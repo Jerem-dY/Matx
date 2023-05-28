@@ -1,7 +1,7 @@
 # Matx
 
 A lightweight, rusty matrix library that allows for simple (as in, easy to put into place) matrix handling and operations.  
-Operations are not done in place, so most functions, especially mathematical operations, are pure functions that consume their arguments and output a new matrix.
+Operations are not done in-place, so most functions, especially mathematical operations, are pure functions that consume their arguments and output a new matrix.
 
 ![build-badge](https://img.shields.io/github/actions/workflow/status/Jerem-dY/Matx/rust.yml)
 [![GitHub](https://img.shields.io/github/license/Jerem-dY/matx)](https://github.com/Jerem-dY/Matx/blob/main/LICENSE)
@@ -16,10 +16,10 @@ Operations are not done in place, so most functions, especially mathematical ope
 ## TODO
 - [x] Matrix initialization (*filled*, *random*, *custom*)
 - [x] Basic operations `Mat` with `Mat` and `Mat` with `Scalar`
-- [x] Better error handling (`Results` for operations that may fail because of uncompatible sizes?)
+- [x] Better error handling (`Results` for operations that may fail because of uncompatible sizes)
 - [ ] Matrix rotations
 - [ ] Macros for simpler initialization
-- [ ] Better recursive matrices (operations, display, etc.)
+- [ ] Better recursive matrices (operations, display, etc.)?
 - [ ] Computations on GPU?
 
 ## Notes on usage
@@ -57,7 +57,16 @@ Currently implemented operations are as follows:
 - `Mat - Mat` and `Mat - scal`
 - `Mat ** scal`
 
-Summing up a matrix's content is also available for all types that implement `std::iter::Sum`: `.sum()`
+Summing up a matrix's content is also available for all types that implement `std::iter::Sum`, using `.sum()`.
 
 ### Mapping
 You can apply a closure on each matrix element using the `.apply()` method. This is a pretty powerful method that uses the data vector's iterator's `.map()`.
+
+### Iterators
+
+The `Matrix` type has three iterators available:
+- a `Rows` iterator accessible through `.rows()`
+- a `Columns` iterator accessible through `.cols()`
+- a `Cells` iterator accessible through `.cells()`
+
+Each one of them is a double-ended iterator.
