@@ -49,3 +49,14 @@ Matrix-matrix operations may require compatibility between the two (sizewise) ; 
 As such, inline arithmetics is discouraged: `a + b * (d - e)` should rather be computed step by step as good pratice, or else all 'em unwraps will make things unreadable.
 
 No operation is done in-place: they all generate a new matrix. You'll need to explicitly `.clone()` a matrix if it should be used in several operations.
+
+Current implemented operations are as follows:
+- `Mat * Mat` and `Mat * scal`
+- `Mat / Mat` and `Mat / scal`
+- `Mat + Mat` and `Mat + scal`
+- `Mat - Mat` and `Mat - scal`
+
+Summing up a matrix's content is also available for all types that implement `T+T` and can be summed through an iterator: `.sum()`
+
+### Mapping
+You can apply a closure on each matrix elements using the `.map()` method

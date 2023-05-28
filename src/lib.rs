@@ -271,7 +271,7 @@ impl <T: rand::distributions::uniform::SampleUniform> Matrix<T> {
 }
 
 
-impl<T: std::ops::Add<Output = T> + std::iter::Sum + Clone>  Matrix<T> {
+impl<T: std::ops::Add + std::iter::Sum + Clone>  Matrix<T> {
 
     /// Method that returns the sum of all cells in the matrix.
     /// 
@@ -451,6 +451,73 @@ where T: std::ops::Mul<Output = T> + std::ops::Add<Output = T> + num::NumCast + 
     }
 }
 
+// Mat_a * b
+impl<T>
+ops::Mul<T> for Matrix<T>
+where T: std::ops::Mul<Output = T> + num::NumCast + Clone
+{
+    type Output = Matrix<T>;
+
+    fn mul(self, rhs: T) -> Self::Output {
+        let mut out: Matrix<T> = Matrix::<T>::new(self.rows, self.cols);
+
+        for (i, val) in self.data.iter().enumerate() {
+                out.data[i] = val.to_owned() * rhs.clone();
+        }
+
+        out
+    }
+}
+
+// Mat_a / Mat_b
+impl<T> 
+ops::Div<Matrix<T>> for Matrix<T> 
+where T: std::ops::Div<Output = T> + std::ops::Add<Output = T> + num::NumCast + Clone
+{
+
+    type Output = Result<Matrix<T>, MatxError>;
+
+    fn div(self, rhs: Matrix<T>) -> Self::Output {
+        
+        if self.cols != rhs.rows {
+            Err(MatxError::SizeError)
+        }
+        else {
+
+            let mut out = Matrix::<T>::new(self.rows, rhs.cols);
+
+            for i in 0..self.rows {
+                for j in 0..rhs.cols {
+
+                    for k in 0..self.cols {
+                        out.data[i*rhs.cols+j] = out.data[i*rhs.cols+j].clone() + self.data[i*rhs.rows+k].clone() / rhs.data[k*rhs.cols+j].clone();
+                    }
+                    
+                }
+            }
+
+            Ok(out)
+        }
+    }
+}
+
+// Mat_a / b
+impl<T>
+ops::Div<T> for Matrix<T>
+where T: std::ops::Div<Output = T> + num::NumCast + Clone
+{
+    type Output = Matrix<T>;
+
+    fn div(self, rhs: T) -> Self::Output {
+        let mut out: Matrix<T> = Matrix::<T>::new(self.rows, self.cols);
+
+        for (i, val) in self.data.iter().enumerate() {
+                out.data[i] = val.to_owned() / rhs.clone();
+        }
+
+        out
+    }
+}
 
 impl <T> From<Vec<Vec<T>>> for Matrix<T> {
 
