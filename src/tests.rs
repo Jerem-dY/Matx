@@ -197,11 +197,11 @@ fn sub_mat() {
 fn iterators() {
 
     // 1 1 1 1 1
-    // 2 2 2 2 2
+    // 2 2 3 2 2
     // 3 3 3 3 3
     // 4 4 4 4 4
     // 5 5 5 5 5
-    let a = Matrix::from(vec![
+    let mut a = Matrix::from(vec![
         vec![1.0f64; 5],
         vec![2.0f64, 2.0f64, 3.0f64, 2.0f64, 2.0f64],
         vec![3.0f64; 5],
@@ -213,14 +213,81 @@ fn iterators() {
         println!("{:?}", r);
     }
 
+    for cell in a.iter() {
+        println!("{:?}", cell);
+    }
+
     println!();
 
     for c in a.cols() {
         println!("{:?}", c);
     }
+
+    a.set(9.0f64, 0, 4).unwrap();
+
+    println!("{}", a);
+
+    let mut col_iter = a.cols();
+    let mut row_iter = a.rows();
+
+    assert_eq!(col_iter.next_back().unwrap(), vec![9.0, 2.0, 3.0, 4.0, 5.0]);
+    assert_eq!(row_iter.next_back().unwrap(), vec![5.0f64; 5]);
 }
 
+#[test]
+fn iter_mix() {
 
+    let mut a = Matrix::from(vec![
+        vec![1.0f64; 5],
+        vec![2.0f64, 2.0f64, 3.0f64, 2.0f64, 2.0f64],
+        vec![3.0f64; 5],
+        vec![4.0f64; 5],
+        vec![5.0f64; 5],
+    ]);
+    a.set(9.0f64, 0, 4).unwrap();
+
+    // Rows
+    println!("ROWS");
+    let mut iter = a.rows();
+    let mut cmptr = 0;
+    while let Some(r1) = iter.next() {
+
+        println!("{}", cmptr);
+
+        if let Some(r2) = iter.next_back() {
+            println!("{:?}\t|\t{:?}", r1, r2);
+        }
+        else {
+            println!("{:?}\t|", r1);
+        }
+
+        cmptr += 1;
+    }
+
+    assert!(cmptr == 3);
+
+    // Columns
+    println!("COLUMNS");
+    let mut iter = a.cols();
+    let mut cmptr = 0;
+    while let Some(r1) = iter.next() {
+
+        println!("{}", cmptr);
+
+        if let Some(r2) = iter.next_back() {
+            println!("{:?}\t|\t{:?}", r1, r2);
+        }
+        else {
+            println!("{:?}\t|", r1);
+        }
+
+        cmptr += 1;
+    }
+
+    assert!(cmptr == 3);
+
+
+}
 
 #[test]
 fn serialize() {

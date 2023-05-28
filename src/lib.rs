@@ -16,7 +16,7 @@ pub enum MatxError {
 }
 
 
-/// Structure that defines a matrix. It has only two properties, a vector of values of type T that is segmented virtually when operating over the matrix, and the number of rows and columns.
+/// Structure that defines a matrix. It only has two properties, a vector of values of type T that is segmented virtually when operating over the matrix, and the number of rows and columns.
 #[derive(PartialEq, Debug, Default, Clone, Serialize, Deserialize)]
 pub struct Matrix<T> {
     data: Vec<T>,
@@ -91,7 +91,7 @@ impl<T: Default + Clone> Matrix<T> {
 
 impl<T: Clone> Matrix<T> {
 
-    pub fn map<F>(&self, f: F) -> Self 
+    pub fn apply<F>(&self, f: F) -> Self 
     where F: FnMut(&T,) -> T
     {
         Self {
@@ -119,7 +119,7 @@ impl<T: Clone> Matrix<T> {
     /// }
     /// ```
     pub fn rows<'a>(&'a self) -> Rows<'a, T> {
-        Rows::<'a>(self, 0)
+        Rows::<'a>(self, 0, 0)
     }
 
     /// Method that returns a `Columns` object, an iterator that iterates over columns of a matrix.
@@ -140,7 +140,28 @@ impl<T: Clone> Matrix<T> {
     /// }
     /// ```
     pub fn cols<'a>(&'a self) -> Columns<'a, T> {
-        Columns::<'a>(self, 0)
+        Columns::<'a>(self, 0, 0)
+    }
+
+    /// Method that returns a `Cells` object, an iterator that iterates over cells of a matrix.
+    /// 
+    /// # Examples
+    /// 
+    /// Basic usage:
+    /// ```
+    /// use matx::*;
+    /// 
+    /// let mat = Matrix::<f64>::from(vec![
+    ///     vec![2.0f64, 3.6f64], 
+    ///     vec![1.2f64, 0.2f64]
+    /// ]);
+    /// 
+    /// for r in mat.iter() {
+    ///     println!("{:?}", r);
+    /// }
+    /// ```
+    pub fn iter<'a>(&'a self) -> Cells<'a, T> {
+        Cells::<'a>(self, self.data.iter())
     }
 
     /// Method to get the [row ; column] item of the matrix.
@@ -271,7 +292,7 @@ impl <T: rand::distributions::uniform::SampleUniform> Matrix<T> {
 }
 
 
-impl<T: std::ops::Add + std::iter::Sum + Clone>  Matrix<T> {
+impl<T: std::iter::Sum + Clone>  Matrix<T> {
 
     /// Method that returns the sum of all cells in the matrix.
     /// 
@@ -554,8 +575,14 @@ impl <T> From<Vec<Vec<T>>> for Matrix<T> {
     }
 }
 
-pub struct Rows<'a, T: >(&'a Matrix<T>, usize);
-pub struct Columns<'a, T: >(&'a Matrix<T>, usize);
+/// An iterator over rows of a matrix.
+pub struct Rows<'a, T>(&'a Matrix<T>, usize, usize);
+
+/// An iterator over columns of a matrix.
+pub struct Columns<'a, T>(&'a Matrix<T>, usize, usize);
+
+// An iterator over cells of a matrix.
+pub struct Cells<'a, T>(&'a Matrix<T>, std::slice::Iter<'a, T>);
 
 
 impl<T: Clone> Iterator for Columns<'_, T> {
@@ -564,7 +591,7 @@ impl<T: Clone> Iterator for Columns<'_, T> {
 
     fn next(&mut self) -> Option<Vec<T>> {
 
-        if self.1*self.0.rows < self.0.data.len(){
+        if self.1*self.0.rows + self.2*self.0.rows < self.0.data.len() {
 
             let mut out = Vec::<T>::new();
 
@@ -582,6 +609,28 @@ impl<T: Clone> Iterator for Columns<'_, T> {
 }
 
 
+impl<T: Clone> DoubleEndedIterator for Columns<'_, T> {
+
+    fn next_back(&mut self) -> Option<Self::Item> {
+
+        if self.1*self.0.rows + self.2*self.0.rows < self.0.data.len() {
+
+            let mut out = Vec::<T>::new();
+
+            for i in 0..self.0.rows {
+                let index = i*self.0.rows + (self.0.cols - self.2 - 1);
+                out.push(self.0.data[index].clone());
+            }
+            self.2 += 1;
+            Some(out)
+        }
+        else{
+            None
+        }
+    }
+}
+
+
 impl<T: Clone> Iterator for Rows<'_, T> {
 
     type Item = Vec<T>;
@@ -590,12 +639,49 @@ impl<T: Clone> Iterator for Rows<'_, T> {
 
         let index = self.1*self.0.cols;
 
-        if index < self.0.data.len(){
+        if index + self.2*self.0.cols < self.0.data.len() {
             self.1 += 1;
             Some(self.0.data[index..index+self.0.cols].to_owned())
         }
         else{
             None
         }
+    }
+}
+
+
+impl<T: Clone> DoubleEndedIterator for Rows<'_, T> {
+
+    fn next_back(&mut self) -> Option<Vec<T>> {
+
+        let index = (self.0.rows - self.2 - 1)*self.0.cols;
+
+        if self.1*self.0.cols + self.2*self.0.cols < self.0.data.len() {
+            self.2 += 1;
+            Some(self.0.data[index..index+self.0.cols].to_owned())
+        }
+        else{
+            None
+        }
+    }
+}
+
+
+impl<'a, T: Clone> Iterator for Cells<'a, T> {
+
+    type Item = &'a T;
+
+    fn next(&mut self) -> Option<&'a T> {
+
+        self.1.next()
+    }
+}
+
+
+impl<'a, T: Clone> DoubleEndedIterator for Cells<'a, T> {
+
+    fn next_back(&mut self) -> Option<&'a T> {
+
+        self.1.next_back()
     }
 }

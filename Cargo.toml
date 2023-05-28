@@ -4,6 +4,8 @@ version = "0.2.0"
 edition = "2021"
 description = "A lightweight, rusty matrix library that allows for simple and fast matrix operations."
 license = "MIT"
+documentation = "https://docs.rs/matx/0.2.0/matx/"
+repository = "https://github.com/Jerem-dY/Matx"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

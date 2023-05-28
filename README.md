@@ -11,12 +11,12 @@ Operations are not done in place, so most functions, especially mathematical ope
 
 - GitHub:   https://github.com/Jerem-dY/Matx
 - Crate.io: https://crates.io/crates/matx
-- Doc:      https://docs.rs/matx/0.1.0/matx/
+- Doc:      https://docs.rs/matx/latest/matx/index.html
 
 ## TODO
 - [x] Matrix initialization (*filled*, *random*, *custom*)
 - [x] Basic operations `Mat` with `Mat` and `Mat` with `Scalar`
-- [ ] Better error handling (`Results` for operations that may fail because of uncompatible sizes?)
+- [x] Better error handling (`Results` for operations that may fail because of uncompatible sizes?)
 - [ ] Matrix rotations
 - [ ] Macros for simpler initialization
 - [ ] Better recursive matrices (operations, display, etc.)
@@ -50,13 +50,14 @@ As such, inline arithmetics is discouraged: `a + b * (d - e)` should rather be c
 
 No operation is done in-place: they all generate a new matrix. You'll need to explicitly `.clone()` a matrix if it should be used in several operations.
 
-Current implemented operations are as follows:
+Currently implemented operations are as follows:
 - `Mat * Mat` and `Mat * scal`
 - `Mat / Mat` and `Mat / scal`
 - `Mat + Mat` and `Mat + scal`
 - `Mat - Mat` and `Mat - scal`
+- `Mat ** scal`
 
-Summing up a matrix's content is also available for all types that implement `T+T` and can be summed through an iterator: `.sum()`
+Summing up a matrix's content is also available for all types that implement `std::iter::Sum`: `.sum()`
 
 ### Mapping
-You can apply a closure on each matrix elements using the `.map()` method
+You can apply a closure on each matrix element using the `.apply()` method. This is a pretty powerful method that uses the data vector's iterator's `.map()`.
