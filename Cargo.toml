@@ -1,6 +1,6 @@
 [package]
 name = "matx"
-version = "0.0.0-git"
+version = "0.2.0"
 edition = "2021"
 description = "A lightweight, rusty matrix library that allows for simple and fast matrix operations."
 license = "MIT"
