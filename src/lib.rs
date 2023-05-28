@@ -1,4 +1,4 @@
-//! This crate is a lightweight, rusty matrix library that allows for simple and fast matrix operations.
+//! This crate is a lightweight, rusty matrix library that allows for simple (as in, easy to put into place) matrix handling and operations.
 
 #[cfg(test)]
 mod tests;
@@ -8,6 +8,12 @@ use rand::Rng;
 use std::ops;
 use num::pow::*;
 use serde::{Serialize, Deserialize};
+
+#[derive(Debug, PartialEq)]
+pub enum MatxError {
+    SizeError,
+
+}
 
 
 /// Structure that defines a matrix. It has only two properties, a vector of values of type T that is segmented virtually when operating over the matrix, and the number of rows and columns.
@@ -37,7 +43,7 @@ impl<T: Debug> Display for Matrix<T> {
 
 impl<T: num::NumCast + Clone> Matrix<T> {
     
-    /// Constructor of a new, empty matrix of size rows*cols. Every value is initialized using T::default().
+    /// Constructor of a new, empty matrix of numbers of size rows*cols. Every value is initialized using zeros.
     /// 
     /// # Examples
     /// 
@@ -53,6 +59,30 @@ impl<T: num::NumCast + Clone> Matrix<T> {
     pub fn new(rows: usize, cols: usize) -> Self {
         Self {
             data: vec![num::NumCast::from(0).unwrap(); rows*cols],
+            rows,
+            cols
+        }
+    }
+}
+
+impl<T: Default + Clone> Matrix<T> {
+    
+    /// Constructor of a new, empty matrix of numbers of size rows*cols. Every value is initialized using zeros.
+    /// 
+    /// # Examples
+    /// 
+    /// Basic usage:
+    /// ```
+    /// use matx::*;
+    /// 
+    /// let mat = Matrix::<f64>::new(2, 2);
+    /// // Gives: 
+    /// // 0.0f64, 0.0f64
+    /// // 0.0f64, 0.0f64
+    /// ```
+    pub fn empty(rows: usize, cols: usize) -> Self {
+        Self {
+            data: vec![T::default(); rows*cols],
             rows,
             cols
         }
@@ -265,46 +295,61 @@ impl<T: std::ops::Add<Output = T> + std::iter::Sum + Clone>  Matrix<T> {
     }
 }
 
+// Mat_a + Mat_b
 impl<T> 
 ops::Add<Matrix<T>> for Matrix<T> 
 where T: std::ops::Add<Output = T> + num::NumCast + Clone
 {
 
-    type Output = Matrix<T>;
+    type Output = Result<Matrix<T>, MatxError>;
 
     fn add(self, rhs: Matrix<T>) -> Self::Output {
 
-        let mut out = Matrix::<T>::new(self.rows, self.cols);
-
-        for (i, (a, b)) in zip(self.data.iter(), rhs.data.iter()).enumerate(){
-            out.data[i] = a.to_owned() + b.to_owned();
+        if self.rows != rhs.rows || self.cols != rhs.cols {
+            Err(MatxError::SizeError)
         }
+        else {
 
-        out
+            let mut out = Matrix::<T>::new(self.rows, self.cols);
+
+            for (i, (a, b)) in zip(self.data.iter(), rhs.data.iter()).enumerate(){
+                out.data[i] = a.to_owned() + b.to_owned();
+            }
+
+            Ok(out)
+        }
 
     }
 }
 
+// Mat_a - Mat_b
 impl<T> 
 ops::Sub<Matrix<T>> for Matrix<T> 
 where T: std::ops::Sub<Output = T> + num::NumCast + Clone
 {
 
-    type Output = Matrix<T>;
+    type Output = Result<Matrix<T>, MatxError>;
 
     fn sub(self, rhs: Matrix<T>) -> Self::Output {
 
-        let mut out = Matrix::<T>::new(self.rows, self.cols);
-
-        for (i, (a, b)) in zip(self.data.iter(), rhs.data.iter()).enumerate(){
-            out.data[i] = a.to_owned() - b.to_owned();
+        if self.rows != rhs.rows || self.cols != rhs.cols {
+            Err(MatxError::SizeError)
         }
+        else {
 
-        out
+            let mut out = Matrix::<T>::new(self.rows, self.cols);
+
+            for (i, (a, b)) in zip(self.data.iter(), rhs.data.iter()).enumerate(){
+                out.data[i] = a.to_owned() - b.to_owned();
+            }
+
+            Ok(out)
+        }
 
     }
 }
 
+// Mat_a + b
 impl<T>
 ops::Add<T> for Matrix<T>
 where T: std::ops::Add<Output = T> + num::NumCast + Clone
@@ -322,6 +367,7 @@ where T: std::ops::Add<Output = T> + num::NumCast + Clone
     }
 }
 
+// Mat_a - b
 impl<T>
 ops::Sub<T> for Matrix<T>
 where T: std::ops::Sub<Output = T> + num::NumCast + Clone
@@ -339,7 +385,7 @@ where T: std::ops::Sub<Output = T> + num::NumCast + Clone
     }
 }
 
-
+// -Mat_a
 impl<T>
 ops::Neg for Matrix<T> 
 where T: ops::Neg<Output = T> + Clone
@@ -355,7 +401,7 @@ where T: ops::Neg<Output = T> + Clone
     }
 }
 
-
+// Mat_a ** b
 impl<T>
 Pow<T> for Matrix<T> 
 where T: Clone + std::ops::Mul<Output = T> + Pow<T, Output = T> + num::One
@@ -373,18 +419,18 @@ where T: Clone + std::ops::Mul<Output = T> + Pow<T, Output = T> + num::One
     }
 }
 
-
+// Mat_a * Mat_b
 impl<T> 
 ops::Mul<Matrix<T>> for Matrix<T> 
 where T: std::ops::Mul<Output = T> + std::ops::Add<Output = T> + num::NumCast + Clone
 {
 
-    type Output = Result<Matrix<T>, &'static str>;
+    type Output = Result<Matrix<T>, MatxError>;
 
     fn mul(self, rhs: Matrix<T>) -> Self::Output {
         
         if self.cols != rhs.rows {
-            Err("Matrices must have the same inner size to be multiplied.")
+            Err(MatxError::SizeError)
         }
         else {
 
@@ -450,8 +496,6 @@ impl<T: Clone> Iterator for Columns<'_, T> {
     type Item = Vec<T>;
 
     fn next(&mut self) -> Option<Vec<T>> {
-
-        
 
         if self.1*self.0.rows < self.0.data.len(){
 

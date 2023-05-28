@@ -125,7 +125,7 @@ fn add_mat() {
         vec![1.0f64; 5],
     ]);
 
-    let c = a + b;
+    let c = (a + b).unwrap();
 
     // a + b should equal this:
     // 2 2 2 2 2
@@ -173,7 +173,7 @@ fn sub_mat() {
         vec![1.0f64; 5],
     ]);
 
-    let c = a - b;
+    let c = (a - b).unwrap();
 
     // a - b should equal this:
     // 0 0 0 0 0
